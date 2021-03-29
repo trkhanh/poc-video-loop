@@ -9,9 +9,9 @@ import useFormData from 'react-use-form-data'
 export default function Demo() {
 
     const [formData, updateFormData, initialFormData, isInitialDataForPlaceholder] = useFormData({
-        sampleVideo: '../assets/squats-720p.mp4',
-        start: 4.31,
-        end: 9.48,
+        sampleVideo: 'http://192.168.240.174:5500/demo/assets/paralettes.mp4',
+        start: 0.17,
+        end: 0.48,
         isEditorActive: false,
         isDebugMode: true,
         isSplitView: false
