@@ -159,3 +159,96 @@ export default class VideoLooper extends React.Component {
         )
     }
 }
+
+const Debug = (props) => {
+    return (
+        <DebugContainer isSplitView={props.isSplitView}>
+            <DebugHeader isVisible={!props.isSplitView}>
+                <header>{props.isVideoCloneActive ? 'cloned video' : 'main video'}</header>
+            </DebugHeader>
+            <DebugHeader isVisible={props.isSplitView} isSplitView={props.isSplitView}>
+                <header>main video</header>
+                <header>cloned video</header>
+            </DebugHeader>
+            <DebugData>
+                <div>{props.currentTime}</div>
+            </DebugData>
+        </DebugContainer>
+    )
+}
+
+const VideoContainer = styled.div`
+    position: relative;
+    top:0;
+    width: ${props => props.width};
+    height: ${props => props.height};
+    overflow: hidden;
+    background-color: black;
+    cursor: pointer;
+`;
+
+const Video = styled.video`
+    position:  ${props => ((props.isDebugMode && props.isSplitView) ? 'relative' : 'absolute')};
+    object-fit: ${props => props.objectFit};
+    object-position: ${props => props.objectPosition};
+    width: ${props => ((props.isDebugMode && props.isSplitView) ? '50%' : '100%')};
+    height: 100%;
+    left:0;
+    opacity: ${props => (props.isVisible || (props.isDebugMode && props.isSplitView) ? 1 : 0)};
+    &.videoClone {
+        filter: ${props => ((props.isDebugMode && props.isSplitView) ? 'grayscale(100%)' : 'none')};
+    }
+`;
+
+const PlayButton = styled.div`
+    z-index:1;
+    position: absolute;
+    top: 50%;
+    left: ${props => ((props.isDebugMode && props.isSplitView) ? (props.isVideoCloneActive ? '75%' : '25%') : '50%')};;
+    transform: translate(-50%, -50%);
+    border: 0;
+    background: transparent;
+    box-sizing: border-box;
+    width: 0;
+    height: 100px;
+    border-color: transparent transparent transparent #d6d6d644;
+    border-style: solid;
+    border-width: 50px 0 50px 75px;
+    opacity: ${props => (props.isPlaying ? 0 : 1)};
+    transition: opacity 0.3s;
+`;
+
+const DebugContainer = styled.div`
+    position: absolute;
+    bottom: 2em;
+    right: ${props => (props.isSplitView ? '0' : '2em')};
+    width: ${props => (props.isSplitView ? '100%' : 'auto')};
+    font-family: "Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif;
+    line-height:1;
+    user-select: none;
+`;
+
+const DebugHeader = styled.div`
+    color: grey;
+    font-size:1.4em;
+    font-weight: 200;
+    display: ${props => (props.isVisible ? 'block' : 'none')};
+    text-align: center;
+    header {
+        display: ${props => (props.isSplitView ? 'inline-block' : 'block')};
+        width: ${props => (props.isSplitView ? '50%' : '100%')};
+    }
+`;
+
+const DebugData = styled.div`  
+    text-align: center;
+    width: 100%;
+    z-index:2;
+    div {
+        color: grey;
+        display: inline-block;
+        text-align: left;
+        font-size:5em;
+        font-weight: 100;
+    }
+`;
