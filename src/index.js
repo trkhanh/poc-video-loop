@@ -69,11 +69,93 @@ export default class VideoLooper extends React.Component {
         cancelAnimationFrame(this._frameId);
     }
 
-    onLoadedVideo(){
+    onLoadedVideo() {
         this.video.pause();
         this.props.autoPlay && this.togglePlayback();
         this.video.playbackRate = this.props.speed || 1;
     }
 
-    
+    onLoadedVideoClone() {
+        this.videoClone.pause();
+        this.videoClone.currentTime = this.props.start;
+        this.videoClone.playbackRate = this.props.speed || 1;
+    }
+
+    togglePlayback = (e) => {
+        e && e.preventDefault();
+        const currentVideo = this.state.isVideoCloneActive ? 'videoClone' : 'video'
+
+        if (this[currentVideo].paused) {
+            this[currentVideo].play();
+            this._frameId = requestAnimationFrame(this.tick);
+            this.setState({
+                isPlaying: true
+            })
+        }
+        else {
+            this[currentVideo].pause();
+            cancelAnimationFrame(this._frameId);
+            this.setState({
+                isPlaying: false
+            });
+        }
+    }
+
+    tick = () => {
+        this._frameId = requestAnimationFrame(this.tick);
+
+        this.state.isVideoCloneActive
+            ? this.checkLoopEnd(this.videoClone, this.video)
+            : this.checkLoopEnd(this.video, this.videoClone);
+
+        if (this.props.isDebugMode) {
+            this.setState({
+                currentTime: this.state.isVideoCloneActive
+                    ? (Math.round(this.videoClone.currentTime * 100) / 100).toFixed(2)
+                    : (Math.round(this.video.currentTime * 100) / 100).toFixed(2)
+            })
+        }
+    }
+
+    checkLoopEnd(currentVideo, nextVideo) {
+        if (currentVideo.currentTime >= this.props.end && (!this.props.loopCount || this.state.currentLoop < this.props.loopCount)) {
+
+            nextVideo.play();
+
+            this.setState({
+                isVideoCloneActive: !this.state.isVideoCloneActive,
+                currentLoop: this.state.currentLoop + 1
+            }, () => {
+                currentVideo.pause();
+                setTimeout(() => {
+                    currentVideo.currentTime = this.props.start;
+                }, 500);
+            });
+        }
+    }
+
+    onEndedVideo() {
+        cancelAnimationFrame(this._frameId);
+        this.setState({
+            currentLoop: 0,
+            isPlaying: false
+        });
+    }
+
+    render() {
+        return (
+            <VideoContainer onClick={this.togglePlayback} {...this.props}>
+                <PlayButton {...this.state} {...this.props} />
+                <Video ref={(video) => { this.video = video; }} isVisible {...this.props}>
+                    <source src={this.props.source} type='video/mp4' />
+                </Video>
+                <Video ref={(videoClone) => { this.videoClone = videoClone; }} className='videoClone' isVisible={this.state.isVideoCloneActive} {...this.props}>
+                    <source src={this.props.source} type='video/mp4' />
+                </Video>
+                {this.props.isDebugMode &&
+                    <Debug isSplitView={this.props.isSplitView} isVideoCloneActive={this.state.isVideoCloneActive} currentTime={this.state.currentTime} />
+                }
+            </VideoContainer>
+        )
+    }
 }
